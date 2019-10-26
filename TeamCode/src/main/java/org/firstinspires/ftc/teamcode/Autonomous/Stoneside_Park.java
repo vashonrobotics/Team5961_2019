@@ -34,12 +34,9 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.SkystoneTracker;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
@@ -61,7 +58,7 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 
 @Config
 @Autonomous(group = "drive")
-public class Stoneside_Autonomous extends LinearOpMode {
+public class Stoneside_Park extends LinearOpMode {
     public static double DISTANCE = 10;
     public static double ANGLE = 90;
     // Declare OpMode members.
@@ -95,6 +92,7 @@ public class Stoneside_Autonomous extends LinearOpMode {
         drive.followTrajectorySync(
                 drive.trajectoryBuilder()
                     .forward(9)
+                    .strafeTo(new Vector2d(0,36))
                     .build()
         );
 

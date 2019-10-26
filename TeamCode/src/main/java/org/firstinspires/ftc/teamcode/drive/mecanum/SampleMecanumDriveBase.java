@@ -59,7 +59,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     private TrajectoryFollower follower;
 
     public SampleMecanumDriveBase() {
-        super(kV, kA, kStatic, TRACK_WIDTH);
+        super(kV, kA, kStatic, 11.25, 13.25);
 
         dashboard = FtcDashboard.getInstance();
         clock = NanoClock.system();
@@ -69,7 +69,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         turnController = new PIDFController(HEADING_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
 
-        constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
+        constraints = new MecanumConstraints(BASE_CONSTRAINTS, 11.25, 13.25);
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID);
     }
 
