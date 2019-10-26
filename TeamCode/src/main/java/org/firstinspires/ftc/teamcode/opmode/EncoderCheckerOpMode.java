@@ -27,59 +27,66 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
-
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
+ * This OpMode scans a single servo back and forwards until Stop is pressed.
+ * The code is structured as a LinearOpMode
+ * INCREMENT sets how much to increase/decrease the servo position each cycle
+ * CYCLE_MS sets the update period.
  *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
+ * This code assumes a Servo configured with the name "left_hand" as is found on a pushbot.
  *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
+ * NOTE: When any servo position is set, ALL attached servos are activated, so ensure that any other
+ * connected servos are able to move freely before running this test.
+ *
+ * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
+@TeleOp(name = "Check encoders", group = "Concept")
+public class EncoderCheckerOpMode extends LinearOpMode {
+    // Define class members
+    private DcMotor leftFront;
+    private DcMotor leftRear;
+    private DcMotor rightRear;
+    private DcMotor rightFront;
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-
-public class Teleop_OpMode extends LinearOpMode {
-
-    // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private MecanumDrive drive = null;
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-        drive = new SampleMecanumDriveREV(hardwareMap);
 
-        // Wait for the game to start (driver presses PLAY)
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+
         waitForStart();
-        runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)");
+        // Scan servo till stop pressed.
+        while(opModeIsActive()){
+            // Display the current value
+            int leftFrontPos = leftFront.getCurrentPosition();
+            int rightFrontPos = rightFront.getCurrentPosition();
+            int leftRearPos = leftRear.getCurrentPosition();
+            int rightRearPos = rightRear.getCurrentPosition();
+
+            @SuppressLint("DefaultLocale") String message = String.format("lf = %d, rf = %d, lr = %d, rr = %d",
+                    leftFrontPos, rightFrontPos, leftRearPos, rightRearPos);
+            telemetry.addLine(message);
             telemetry.update();
 
-
+            idle();
         }
+
     }
 }
