@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.mecanum;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.BASE_CONSTRAINTS;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
@@ -27,6 +26,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 
@@ -59,7 +59,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
     private TrajectoryFollower follower;
 
     public SampleMecanumDriveBase() {
-        super(kV, kA, kStatic, 11.25, 13.25);
+        super(kV, kA, kStatic, DriveConstants.TRACK_WIDTH, DriveConstants.WHEEL_BASE);
 
         dashboard = FtcDashboard.getInstance();
         clock = NanoClock.system();
@@ -69,7 +69,7 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
         turnController = new PIDFController(HEADING_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
 
-        constraints = new MecanumConstraints(BASE_CONSTRAINTS, 11.25, 13.25);
+        constraints = new MecanumConstraints(BASE_CONSTRAINTS, DriveConstants.TRACK_WIDTH, DriveConstants.WHEEL_BASE);
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID);
     }
 
@@ -187,7 +187,9 @@ public abstract class SampleMecanumDriveBase extends MecanumDrive {
             }
         }
 
-        dashboard.sendTelemetryPacket(packet);
+        if(dashboard != null) {
+            dashboard.sendTelemetryPacket(packet);
+        }
     }
 
     public void waitForIdle() {

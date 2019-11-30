@@ -10,6 +10,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.util.AxesSigns;
+import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 
 import java.util.ArrayList;
@@ -27,7 +31,7 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
 
-    public SampleMecanumDriveREV(HardwareMap hardwareMap) {
+    public SampleMecanumDriveREV(HardwareMap hardwareMap, boolean isTele) {
         super();
 
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
@@ -40,7 +44,7 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
 
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
-        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+         BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
 
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
@@ -62,10 +66,13 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
         leftRear.setDirection(DcMotor.Direction.REVERSE);
 
         // TODO: set the tuned coefficients from DriveVelocityPIDTuner if using RUN_USING_ENCODER
-        // setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, ...);
+        if(!isTele) {
+            setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
+                    new PIDFCoefficients(DriveConstants.kP, DriveConstants.kI, DriveConstants.kD, DriveConstants.kF));
+        }
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        setLocalizer(new MecanumLocalizer(this, false));
     }
 
     @Override
@@ -79,6 +86,14 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
         for (DcMotorEx motor : motors) {
             motor.setPIDFCoefficients(runMode, new PIDFCoefficients(
                     coefficients.kP, coefficients.kI, coefficients.kD, 1
+            ));
+        }
+    }
+
+    public void setPIDFCoefficients(DcMotor.RunMode runMode, PIDFCoefficients coefficients) {
+        for (DcMotorEx motor : motors) {
+            motor.setPIDFCoefficients(runMode, new PIDFCoefficients(
+                    coefficients.p, coefficients.i, coefficients.d, coefficients.f
             ));
         }
     }

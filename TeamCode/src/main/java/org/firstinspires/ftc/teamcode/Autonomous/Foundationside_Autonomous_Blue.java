@@ -27,16 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.opmode;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -59,106 +59,59 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-
-public class Teleop_OpMode extends LinearOpMode {
-
+@Config
+@Autonomous(group = "drive")
+public class Foundationside_Autonomous_Blue extends LinearOpMode {
+    public static double DISTANCE = 10;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private SampleMecanumDriveBase drive = null;
-    Servo   WaveMF;
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
+    Servo WaveMF;
     Servo   Mine;
-    DcMotor Theta;
-    DcMotor Reach;
-    Grabby claw;
-    CRServo   LongSmush;
-
+    double position = (MAX_POS - MIN_POS) / 2;
+    boolean rampUp = true;
     static final double INCREMENT   = 0.01;
     static final int    CYCLE_MS    =   50;
     static final double MAX_POS     =  1.0;
     static final double MIN_POS     =  0.0;
-    private static int MAX_THETA_TICKS = 143;
-    private static int MIN_THETA_TICKS = -352;
-    private static int MAX_REACH_TICKS = 2538;
-    private static int MIN_REACH_TICKS = 0;
-    private double Theta_Proportion = 0.0;
-    private double Reach_Proportion = 0.0;
+    Grabby claw;
 
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-        drive = new SampleMecanumDriveREV(hardwareMap, true);
+        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
         WaveMF = hardwareMap.get(Servo.class, "WaveMF");
         Mine = hardwareMap.get(Servo.class, "Mine");
-        LongSmush = hardwareMap.get(CRServo.class, "LongSmush");
-        Theta = hardwareMap.get(DcMotor.class, "Theta");
-        Reach = hardwareMap.get(DcMotor.class, "Reach");
-        Theta.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Reach.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Theta.setTargetPosition(0);
-        Reach.setTargetPosition(0);
-        Theta.setPower(1.0);
-        Reach.setPower(1.0);
-        Theta.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Reach.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         claw = new Grabby(Mine, WaveMF);
 
-        // Wait for the game to start (driver presses PLAY)
         waitForStart();
-          while (!isStopRequested()) {
-            drive.setDrivePower(new Pose2d(
-                    -1.0* gamepad1.left_stick_y,
-                    -1.0* gamepad1.left_stick_x,
-                    -0.06  * gamepad1.right_stick_x
-            ));
+        drive.setPoseEstimate(new Pose2d(39, 62, Math.PI/2));
 
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(22)
+                        .build()
+        );
 
+        //grab foundation
 
-            Pose2d poseEstimate = drive.getPoseEstimate();
-            telemetry.addData("x", poseEstimate.getX());
-            telemetry.addData("y", poseEstimate.getY());
-            telemetry.addData("heading", poseEstimate.getHeading());
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .back(22)
+                        .build()
+        );
 
+        //release base
 
-            if(gamepad2.a){
-                claw.dorpClaw();
-            }else {
-                claw.razeClaw();
-            }
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeRight(24)
+                        .build()
+        );
 
-            if(gamepad2.x){
-                claw.openGrip();
-            }else {
-                claw.SMASH();
-            }
+        if (isStopRequested()) return;
 
-            if(gamepad2.b){
-                LongSmush.setPower(0.5);
-            }else {
-                LongSmush.setPower(-0.5 );
-            }
-
-            Theta_Proportion += -0.01 * gamepad2.left_stick_y;
-            Reach_Proportion += 0.0025 * gamepad2.left_stick_x;
-
-            Reach_Proportion = Math.max(0, Math.min(Reach_Proportion,1.0));
-            Theta_Proportion = Math.max(0, Math.min(Theta_Proportion,1.0));
-
-            int Theta_Target = (int)(MIN_THETA_TICKS + Theta_Proportion * (MAX_THETA_TICKS - MIN_THETA_TICKS));
-            int Reach_Target = (int)(MIN_REACH_TICKS + Reach_Proportion * (MAX_REACH_TICKS - MIN_REACH_TICKS));
-
-            Theta.setTargetPosition(Theta_Target);
-            Reach.setTargetPosition(Reach_Target);
-
-            telemetry.addData("Theta target:", Theta_Target);
-            telemetry.addData("Reach Target", Reach_Target);
-
-            telemetry.update();
-
-        }
     }
-
 }
+

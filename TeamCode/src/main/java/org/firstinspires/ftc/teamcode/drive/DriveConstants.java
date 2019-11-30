@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
-import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
-import com.qualcomm.hardware.motors.RevRobotics20HdHexMotor;
+import com.qualcomm.hardware.motors.NeveRest40Gearmotor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 /*
@@ -19,7 +18,7 @@ public class DriveConstants {
      * adjust them in the dashboard; **config variable changes don't persist between app restarts**.
      */
     private static final MotorConfigurationType MOTOR_CONFIG =
-            MotorConfigurationType.getMotorType(RevRobotics20HdHexMotor.class);
+            MotorConfigurationType.getMotorType(NeveRest40Gearmotor.class);
     private static final double TICKS_PER_REV = MOTOR_CONFIG.getTicksPerRev();
 
     /*
@@ -30,9 +29,11 @@ public class DriveConstants {
      * angular distances although most angular parameters are wrapped in Math.toRadians() for
      * convenience.
      */
-    public static double WHEEL_RADIUS = 1.5;
+    public static double WHEEL_RADIUS = 1.969;
+//    public static double WHEEL_RADIUS = 1.76;
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 15.8286;
+    public static double TRACK_WIDTH = 32.0;
+    public static double WHEEL_BASE = 32.0;
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -42,8 +43,19 @@ public class DriveConstants {
      */
     public static double kV = 1.0 / rpmToVelocity(getMaxRpm());
     public static double kA = 0;
-    public static double kStatic = 0;
+    public static double kStatic = 0.1;
 
+    public static double kD = 4;
+    public static double kI = 8;
+    public static double kP = 35;
+    public static double kF = 11;
+
+    public static double MAX_VEL = 15.0;
+    public static double MAX_ACCEL = 30.0;
+    public static double MAX_JERK = 0.0;
+    public static double MAX_ANG_VEL = 180.0;
+    public static double MAX_ANG_ACCEL = 120.0;
+    public static double MAX_ANG_JERK = 0.0;
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
      * the constraints should never exceed ~80% of the robot's actual capabilities. While Road
@@ -53,8 +65,8 @@ public class DriveConstants {
      * forces acceleration-limited profiling).
      */
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            30.0, 30.0, 0.0,
-            Math.toRadians(180.0), Math.toRadians(180.0), 0.0
+            MAX_VEL, MAX_ACCEL, MAX_JERK,
+            Math.toRadians(MAX_ANG_VEL), Math.toRadians(MAX_ANG_ACCEL), MAX_ANG_JERK
     );
 
 

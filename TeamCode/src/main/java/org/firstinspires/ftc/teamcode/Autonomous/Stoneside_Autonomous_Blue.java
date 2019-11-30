@@ -34,13 +34,19 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Grabby;
 import org.firstinspires.ftc.teamcode.SkystoneTracker;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 
 
 /**
@@ -58,7 +64,7 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 
 @Config
 @Autonomous(group = "drive")
-public class Stoneside_Park extends LinearOpMode {
+public class Stoneside_Autonomous_Blue extends LinearOpMode {
     public static double DISTANCE = 10;
     public static double ANGLE = 90;
     // Declare OpMode members.
@@ -66,12 +72,19 @@ public class Stoneside_Park extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private SkystoneTracker tracker = null;
+    private Grabby claw;
+    private Servo WaveMF;
+    private Servo Mine;
 
     @Override
     public void runOpMode() {
-        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
+        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
         tracker = new SkystoneTracker(0.5);
         tracker.init();
+        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
+        Mine = hardwareMap.get(Servo.class, "Mine");
+
+        claw = new Grabby(Mine, WaveMF);
         Trajectory trajectory = drive.trajectoryBuilder()
                 .forward(DISTANCE)
                 .build();
@@ -81,21 +94,72 @@ public class Stoneside_Park extends LinearOpMode {
             if(tracker.isVisible()){
                 double xpos = tracker.getX();
                 double ypos = tracker.getY();
-                telemetry.addData("X:",xpos);
+                telemetry.addData("Stoneside_Autonomous_Red:",xpos);
                 telemetry.addData ("Y:", ypos);
             }
             telemetry.update();
             sleep(25);
         }
-        drive.setPoseEstimate(new Pose2d(-37, 64, -90));
+        drive.setPoseEstimate(new Pose2d(40, 63, Math.PI/2));
 
         drive.followTrajectorySync(
                 drive.trajectoryBuilder()
-                    .forward(9)
-                    .strafeTo(new Vector2d(0,36))
-                    .build()
+                        .strafeLeft(48)
+                        .build()
         );
 
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(24)
+                        .build()
+        );
+
+        drive.turnSync(Math.PI/2);
+//        wiggle(drive);
+//
+//        tracker.update();
+//        sleep(1000);
+//        tracker.update();
+//
+//        int count = 0;
+//        while(!tracker.isVisible() && count < 2) {
+//            drive.followTrajectorySync(
+//                    drive.trajectoryBuilder()
+//                            .strafeLeft(9)
+//                            .build()
+//            );
+//
+//            wiggle(drive);
+//            count++;
+//        }
+
+        //drive and find skystone SNARFLE!
+        //respond to stones
+
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeRight(12)
+                        .build()
+        );
+
+
+//        drive.followTrajectorySync(
+//                drive.trajectoryBuilder()
+//                        .back(72 + (count - 2)  * 8)
+//                        .build()
+//        );
+        drive.turnSync(-Math.PI/2);
+
+        //place block
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeRight(48)
+                        .build()
+        );
+
+//
         if (isStopRequested()) return;
 
 //        drive.followTrajectorySync(trajectory);
@@ -103,5 +167,18 @@ public class Stoneside_Park extends LinearOpMode {
 //        drive.turnSync(Math.toRadians(ANGLE));
 //        drive.turnSync(Math.toRadians(ANGLE));
 //        drive.followTrajectorySync(trajectory);
+    }
+
+    private void wiggle(SampleMecanumDriveBase drive) {
+//        drive.turnSync(-Math.PI / 24);
+//        int sign = 1;
+//        for(int i = 0; i < 2; i++) {
+//            drive.turnSync(sign * Math.PI / 12);
+//            sign *= -1;
+//            tracker.update();
+//        }
+//        drive.turnSync(Math.PI / 24);
+
+
     }
 }

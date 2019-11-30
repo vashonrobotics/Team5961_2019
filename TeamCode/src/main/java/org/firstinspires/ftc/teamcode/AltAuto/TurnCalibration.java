@@ -27,23 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Autonomous;
+package org.firstinspires.ftc.teamcode.AltAuto;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.SkystoneTracker;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.DriveTrain;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumDriveTrain;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumParams;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.Names;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.Navigation;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.OdometryNavigation;
+
+import java.util.stream.Collector;
+
+import static java.lang.Math.PI;
 
 
 /**
@@ -59,51 +59,50 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Config
-@Autonomous(group = "drive")
-public class Stoneside_Autonomous extends LinearOpMode {
-    public static double DISTANCE = 10;
-    public static double ANGLE = 90;
+@Autonomous(name="TurnCalibration", group="Linear Opmode")
+public class TurnCalibration extends LinearOpMode {
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-    private SkystoneTracker tracker = null;
+    private DriveTrain driveTrain;
+    private Navigation navigation;
+
+    public TurnCalibration() {
+        driveTrain = null;
+    }
 
     @Override
     public void runOpMode() {
-        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
-        tracker = new SkystoneTracker(0.5);
-        tracker.init();
-        Trajectory trajectory = drive.trajectoryBuilder()
-                .forward(DISTANCE)
-                .build();
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
-        while(!isStarted()){
-            tracker.update();
-            if(tracker.isVisible()){
-                double xpos = tracker.getX();
-                double ypos = tracker.getY();
-                telemetry.addData("X:",xpos);
-                telemetry.addData ("Y:", ypos);
-            }
-            telemetry.update();
-            sleep(25);
+
+        OdometryNavigation oNav = new OdometryNavigation(12, 12,  PI/4);
+        this.navigation = oNav;
+
+        driveTrain = new MecanumDriveTrain(hardwareMap,
+                new MecanumParams(14.5
+                        / 2, 9.5 / 2, 2.0),
+                oNav, oNav);
+
+        driveTrain.init();
+
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
+        runtime.reset();
+
+//        driveTrain.driveForward(48);
+
+        for(int i = 0; i < 6; i++){
+            driveTrain.turnRelative(Math.PI);
         }
-        drive.setPoseEstimate(new Pose2d(-37, 64, -90));
+    }
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                    .forward(9)
-                    .build()
-        );
-
-        if (isStopRequested()) return;
-
-//        drive.followTrajectorySync(trajectory);
-//        drive.turnSync(Math.toRadians(ANGLE));
-//        drive.turnSync(Math.toRadians(ANGLE));
-//        drive.turnSync(Math.toRadians(ANGLE));
-//        drive.followTrajectorySync(trajectory);
+    public void doSleep() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            // discard
+        }
     }
 }

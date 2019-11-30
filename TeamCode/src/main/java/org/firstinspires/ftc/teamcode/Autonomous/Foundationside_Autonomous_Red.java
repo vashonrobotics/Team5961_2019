@@ -30,17 +30,25 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumDriveTrain;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumParams;
+import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.OdometryNavigation;
+import org.firstinspires.ftc.teamcode.Grabby;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+
+import static java.lang.Math.PI;
 
 
 /**
@@ -58,25 +66,45 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 
 @Config
 @Autonomous(group = "drive")
-public class Foundationside_Autonomous extends LinearOpMode {
+public class Foundationside_Autonomous_Red extends LinearOpMode {
     public static double DISTANCE = 10;
     // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    Servo WaveMF;
+    Servo   Mine;
+
+    Grabby claw;
+    private OdometryNavigation navigation;
+    private MecanumDriveTrain driveTrain;
+
 
     @Override
     public void runOpMode() {
-        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
-        Trajectory trajectory = drive.trajectoryBuilder()
-                .forward(DISTANCE)
-                .build();
+        OdometryNavigation oNav = new OdometryNavigation(39, -62,  -PI/2);
+        this.navigation = oNav;
+
+        driveTrain = new MecanumDriveTrain(hardwareMap,
+                new MecanumParams(14.25 / 2, 9.5 / 2, 2.0),
+                oNav, oNav);
+
+        driveTrain.init();
+        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
+        Mine = hardwareMap.get(Servo.class, "Mine");
+        claw = new Grabby(Mine, WaveMF);
 
         waitForStart();
 
+        driveTrain.driveForward(22);
+
+        //grab foundation
+
+        driveTrain.driveForward(-22);
+
+        //release base
+
+        driveTrain.driveLeft(24);
+
         if (isStopRequested()) return;
 
-        drive.followTrajectorySync(trajectory);
         }
     }
 

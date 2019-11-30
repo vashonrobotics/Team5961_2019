@@ -69,12 +69,18 @@ public class EncoderCheckerOpMode extends LinearOpMode {
         rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
 
+        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftRear.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightRear.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
         waitForStart();
 
 
         // Scan servo till stop pressed.
         while(opModeIsActive()){
             // Display the current value
+
             int leftFrontPos = leftFront.getCurrentPosition();
             int rightFrontPos = rightFront.getCurrentPosition();
             int leftRearPos = leftRear.getCurrentPosition();
