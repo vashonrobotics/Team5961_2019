@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -41,14 +42,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumDriveTrain;
-import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.MecanumParams;
-import org.firstinspires.ftc.teamcode.Auto_MechanumDrive.OdometryNavigation;
 import org.firstinspires.ftc.teamcode.Grabby;
+import org.firstinspires.ftc.teamcode.SkystoneTracker;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
-
-import static java.lang.Math.PI;
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 
 
 /**
@@ -68,43 +66,128 @@ import static java.lang.Math.PI;
 @Autonomous(group = "drive")
 public class Foundationside_Autonomous_Red extends LinearOpMode {
     public static double DISTANCE = 10;
+    public static double ANGLE = 90;
     // Declare OpMode members.
-    Servo WaveMF;
-    Servo   Mine;
-
-    Grabby claw;
-    private OdometryNavigation navigation;
-    private MecanumDriveTrain driveTrain;
-
+    private ElapsedTime runtime = new ElapsedTime();
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
+    private SkystoneTracker tracker = null;
+//    private Grabby claw;
+//    private Servo WaveMF;
+//    private Servo Mine;
 
     @Override
     public void runOpMode() {
-        OdometryNavigation oNav = new OdometryNavigation(39, -62,  -PI/2);
-        this.navigation = oNav;
+        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
+        tracker = new SkystoneTracker(0.5);
+        tracker.init();
+//        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
+//        Mine = hardwareMap.get(Servo.class, "Mine");
+//
+//        claw = new Grabby(Mine, WaveMF);
+        Trajectory trajectory = drive.trajectoryBuilder()
+                .forward(DISTANCE)
+                .build();
 
-        driveTrain = new MecanumDriveTrain(hardwareMap,
-                new MecanumParams(14.25 / 2, 9.5 / 2, 2.0),
-                oNav, oNav);
+        while(!isStarted()){
+            tracker.update();
+            if(tracker.isVisible()){
+                double xpos = tracker.getX();
+                double ypos = tracker.getY();
+                telemetry.addData("Stoneside_Autonomous_Red:",xpos);
+                telemetry.addData ("Y:", ypos);
+            }
+            telemetry.update();
+            sleep(25);
+        }
+        drive.setPoseEstimate(new Pose2d(40, 63, Math.PI/2));
 
-        driveTrain.init();
-        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
-        Mine = hardwareMap.get(Servo.class, "Mine");
-        claw = new Grabby(Mine, WaveMF);
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(12)
+                        .build()
+        );
 
-        waitForStart();
+        wiggle(drive);
 
-        driveTrain.driveForward(22);
+        tracker.update();
+        sleep(1000);
+        tracker.update();
 
-        //grab foundation
+        int count = 0;
+        while(!tracker.isVisible() && count < 2) {
+            drive.followTrajectorySync(
+                    drive.trajectoryBuilder()
+                            .strafeLeft (9)
+                            .build()
+            );
 
-        driveTrain.driveForward(-22);
+            wiggle(drive);
+            count++;
+        }
 
-        //release base
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(8)
+                        .build()
+        );
 
-        driveTrain.driveLeft(24);
+        //grab the block
 
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .back(48)
+                        .build()
+        );
+
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeRight(60 - (count - 2) *8)
+                        .build()
+        );
+
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(12)
+                        .build()
+        );
+
+        //place block
+        //grab base
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .back(24)
+                        .build()
+        );
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeLeft(48)
+                        .build()
+        );
+
+//
         if (isStopRequested()) return;
 
-        }
+//        drive.followTrajectorySync(trajectory);
+//        drive.turnSync(Math.toRadians(ANGLE));
+//        drive.turnSync(Math.toRadians(ANGLE));
+//        drive.turnSync(Math.toRadians(ANGLE));
+//        drive.followTrajectorySync(trajectory);
     }
 
+    private void wiggle(SampleMecanumDriveBase drive) {
+        drive.turnSync(-Math.PI / 24);
+        int sign = 1;
+        for(int i = 0; i < 2; i++) {
+            drive.turnSync(sign * Math.PI / 12);
+            sign *= -1;
+            tracker.update();
+        }
+        drive.turnSync(Math.PI / 24);
+
+    }
+}

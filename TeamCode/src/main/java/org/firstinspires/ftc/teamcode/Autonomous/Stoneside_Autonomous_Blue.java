@@ -72,19 +72,19 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private SkystoneTracker tracker = null;
-    private Grabby claw;
-    private Servo WaveMF;
-    private Servo Mine;
+//    private Grabby claw;
+//    private Servo WaveMF;
+//    private Servo Mine;
 
     @Override
     public void runOpMode() {
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
         tracker = new SkystoneTracker(0.5);
         tracker.init();
-        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
-        Mine = hardwareMap.get(Servo.class, "Mine");
-
-        claw = new Grabby(Mine, WaveMF);
+//        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
+//        Mine = hardwareMap.get(Servo.class, "Mine");
+//
+//        claw = new Grabby(Mine, WaveMF);
         Trajectory trajectory = drive.trajectoryBuilder()
                 .forward(DISTANCE)
                 .build();
@@ -104,54 +104,63 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
 
         drive.followTrajectorySync(
                 drive.trajectoryBuilder()
-                        .strafeLeft(48)
-                        .build()
-        );
-
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
                         .forward(24)
                         .build()
         );
 
-        drive.turnSync(Math.PI/2);
-//        wiggle(drive);
-//
-//        tracker.update();
-//        sleep(1000);
-//        tracker.update();
-//
-//        int count = 0;
-//        while(!tracker.isVisible() && count < 2) {
-//            drive.followTrajectorySync(
-//                    drive.trajectoryBuilder()
-//                            .strafeLeft(9)
-//                            .build()
-//            );
-//
-//            wiggle(drive);
-//            count++;
-//        }
+        wiggle(drive);
 
-        //drive and find skystone SNARFLE!
-        //respond to stones
+        tracker.update();
+        sleep(1000);
+        tracker.update();
 
+        int count = 0;
+        while(!tracker.isVisible() && count < 2) {
+            drive.followTrajectorySync(
+                    drive.trajectoryBuilder()
+                            .strafeRight (9)
+                            .build()
+            );
+
+            wiggle(drive);
+            count++;
+        }
 
         drive.followTrajectorySync(
                 drive.trajectoryBuilder()
-                        .strafeRight(12)
+                        .forward(12)
+                        .build()
+        );
+
+        //grab the block
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .back(12)
                         .build()
         );
 
 
-//        drive.followTrajectorySync(
-//                drive.trajectoryBuilder()
-//                        .back(72 + (count - 2)  * 8)
-//                        .build()
-//        );
-        drive.turnSync(-Math.PI/2);
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .strafeLeft(60 - (count - 2) *8)
+                        .build()
+        );
+
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .forward(12)
+                        .build()
+        );
 
         //place block
+
+        drive.followTrajectorySync(
+                drive.trajectoryBuilder()
+                        .back(12)
+                        .build()
+        );
 
         drive.followTrajectorySync(
                 drive.trajectoryBuilder()
@@ -170,15 +179,14 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
     }
 
     private void wiggle(SampleMecanumDriveBase drive) {
-//        drive.turnSync(-Math.PI / 24);
-//        int sign = 1;
-//        for(int i = 0; i < 2; i++) {
-//            drive.turnSync(sign * Math.PI / 12);
-//            sign *= -1;
-//            tracker.update();
-//        }
-//        drive.turnSync(Math.PI / 24);
-
+        drive.turnSync(-Math.PI / 24);
+        int sign = 1;
+        for(int i = 0; i < 2; i++) {
+            drive.turnSync(sign * Math.PI / 12);
+            sign *= -1;
+            tracker.update();
+        }
+        drive.turnSync(Math.PI / 24);
 
     }
 }
