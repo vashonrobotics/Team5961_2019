@@ -61,7 +61,7 @@ import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 @Config
 @Autonomous(group = "drive")
-public class Stoneside_Park_Red extends LinearOpMode {
+public class Foundationside_Park_Blue extends LinearOpMode {
     public static double DISTANCE = 10;
     public static double ANGLE = 90;
     // Declare OpMode members.
@@ -85,7 +85,7 @@ public class Stoneside_Park_Red extends LinearOpMode {
             if(tracker.isVisible()){
                 double xpos = tracker.getX();
                 double ypos = tracker.getY();
-                telemetry.addData("Stoneside_Red_Park:",xpos);
+                telemetry.addData("Foundationside_Blue_Park:",xpos);
                 telemetry.addData ("Y:", ypos);
             }
             telemetry.update();
@@ -93,8 +93,8 @@ public class Stoneside_Park_Red extends LinearOpMode {
         }
         drive.setPoseEstimate(new Pose2d(40, 63, 90));
 
-        virtualDrive.driveForward(1);
-        virtualDrive.strafeRight(36 );
+        virtualDrive.driveForward(24);
+        virtualDrive.strafeLeft(12);
 
         if (isStopRequested()) return;
 

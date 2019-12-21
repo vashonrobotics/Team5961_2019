@@ -29,17 +29,12 @@
 
 package org.firstinspires.ftc.teamcode.opmode;
 
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.Grabby;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
@@ -51,113 +46,98 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
  * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
- *
+ * <p>
  * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
  * It includes all the skeletal structure that all linear OpModes contain.
- *
+ * <p>
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
+@TeleOp(name = "Basic: Linear OpMode", group = "Linear Opmode")
 
 public class Teleop_OpMode extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private SampleMecanumDriveBase drive = null;
-    Servo   WaveMF;
-    Servo   Mine;
-    DcMotor Theta;
-    DcMotor Reach;
-    Grabby claw;
-    CRServo   LongSmush;
-
-    static final double INCREMENT   = 0.01;
-    static final int    CYCLE_MS    =   50;
-    static final double MAX_POS     =  1.0;
-    static final double MIN_POS     =  0.0;
-    private static int MAX_THETA_TICKS = 143;
-    private static int MIN_THETA_TICKS = -352;
-    private static int MAX_REACH_TICKS = 2538;
-    private static int MIN_REACH_TICKS = 0;
-    private double Theta_Proportion = 0.0;
-    private double Reach_Proportion = 0.0;
-
+    private DcMotor reach;
+    private DcMotor ascension;
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         drive = new SampleMecanumDriveREV(hardwareMap, true);
-        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
-        Mine = hardwareMap.get(Servo.class, "Mine");
-        LongSmush = hardwareMap.get(CRServo.class, "LongSmush");
-        Theta = hardwareMap.get(DcMotor.class, "Theta");
-        Reach = hardwareMap.get(DcMotor.class, "Reach");
-        Theta.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Reach.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Theta.setTargetPosition(0);
-        Reach.setTargetPosition(0);
-        Theta.setPower(1.0);
-        Reach.setPower(1.0);
-        Theta.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Reach.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Intake intake = new Intake(hardwareMap);
+        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
+        Grabby grabby = new Grabby(hardwareMap);
+        BaseGrabber baseGrabber = new BaseGrabber(hardwareMap);
+        double currentFro = 0;
+        double currentUp = 0;
+        boolean isGrabbing = false;
+        boolean isReleased = true;
+        ascension = hardwareMap.dcMotor.get("LiftUp");
+        reach = hardwareMap.dcMotor.get("LiftOut");
 
-        claw = new Grabby(Mine, WaveMF);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-          while (!isStopRequested()) {
+        while (!isStopRequested()) {
+            long start = System.currentTimeMillis();
             drive.setDrivePower(new Pose2d(
-                    -1.0* gamepad1.left_stick_y,
-                    -1.0* gamepad1.left_stick_x,
-                    -0.06  * gamepad1.right_stick_x
+                    -1.0 * gamepad1.left_stick_x,
+                    1.0 * gamepad1.left_stick_y,
+                    -0.06 * gamepad1.right_stick_x
             ));
-
-
 
             Pose2d poseEstimate = drive.getPoseEstimate();
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
 
-
-            if(gamepad2.a){
-                claw.dorpClaw();
-            }else {
-                claw.razeClaw();
+            if (gamepad2.dpad_down) {
+                intake.in();
+            } else if (gamepad2.dpad_up) {
+                intake.out();
+            } else {
+                intake.stop();
             }
 
-            if(gamepad2.x){
-                claw.openGrip();
-            }else {
-                claw.SMASH();
+            liftyBoi.setUpVelocity(-gamepad2.left_stick_y);
+            liftyBoi.setFroVelocity(-gamepad2.right_stick_x);
+
+            int ascensionpos = ascension.getCurrentPosition();
+            int reacpos = reach.getCurrentPosition();
+
+            telemetry.addData("positions", "asc = %d, rea = %d", ascensionpos, reacpos);
+
+            if (gamepad2.right_trigger > .5) {
+                grabby.SMASH();
+            } else {
+                grabby.openGrip();
             }
 
-            if(gamepad2.b){
-                LongSmush.setPower(0.5);
-            }else {
-                LongSmush.setPower(-0.5 );
+            if (gamepad2.a && isReleased) {
+                isGrabbing = !isGrabbing;
+                isReleased = false;
             }
 
-            Theta_Proportion += -0.01 * gamepad2.left_stick_y;
-            Reach_Proportion += 0.0025 * gamepad2.left_stick_x;
+            if (!gamepad2.a) {
+                isReleased = true;
+            }
 
-            Reach_Proportion = Math.max(0, Math.min(Reach_Proportion,1.0));
-            Theta_Proportion = Math.max(0, Math.min(Theta_Proportion,1.0));
+            if (isGrabbing) {
+                baseGrabber.grab();
+            } else {
+                baseGrabber.release();
+            }
 
-            int Theta_Target = (int)(MIN_THETA_TICKS + Theta_Proportion * (MAX_THETA_TICKS - MIN_THETA_TICKS));
-            int Reach_Target = (int)(MIN_REACH_TICKS + Reach_Proportion * (MAX_REACH_TICKS - MIN_REACH_TICKS));
+            long end = System.currentTimeMillis();
+            String msg = String.format("Loop took %dms", end - start);
 
-            Theta.setTargetPosition(Theta_Target);
-            Reach.setTargetPosition(Reach_Target);
-
-            telemetry.addData("Theta target:", Theta_Target);
-            telemetry.addData("Reach Target", Reach_Target);
-
+            telemetry.addLine(msg);
             telemetry.update();
-
         }
     }
 

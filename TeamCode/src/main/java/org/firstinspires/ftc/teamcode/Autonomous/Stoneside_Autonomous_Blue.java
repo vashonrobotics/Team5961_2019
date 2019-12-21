@@ -31,22 +31,19 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Grabby;
-import org.firstinspires.ftc.teamcode.SkystoneTracker;
+import org.firstinspires.ftc.teamcode.SkystoneTrackerVuforia;
+import org.firstinspires.ftc.teamcode.drive.SidewaysBot;
+import org.firstinspires.ftc.teamcode.drive.VirtualDriveInterface;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
+import org.firstinspires.ftc.teamcode.opmode.Intake;
+import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 
 /**
@@ -71,7 +68,7 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
-    private SkystoneTracker tracker = null;
+    private SkystoneTrackerVuforia tracker = null;
 //    private Grabby claw;
 //    private Servo WaveMF;
 //    private Servo Mine;
@@ -79,15 +76,16 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
     @Override
     public void runOpMode() {
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
-        tracker = new SkystoneTracker(0.5);
+        tracker = new SkystoneTrackerVuforia(0.5);
         tracker.init();
+        VirtualDriveInterface virtualDrive = new SidewaysBot(drive, tracker);
+        Intake intake = new Intake(hardwareMap);
+        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
+        Grabby grabby = new Grabby(hardwareMap);
 //        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
 //        Mine = hardwareMap.get(Servo.class, "Mine");
 //
 //        claw = new Grabby(Mine, WaveMF);
-        Trajectory trajectory = drive.trajectoryBuilder()
-                .forward(DISTANCE)
-                .build();
 
         while(!isStarted()){
             tracker.update();
@@ -102,11 +100,7 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
         }
         drive.setPoseEstimate(new Pose2d(40, 63, Math.PI/2));
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(24)
-                        .build()
-        );
+       virtualDrive.driveForward(24);
 
         wiggle(drive);
 
@@ -116,57 +110,32 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
 
         int count = 0;
         while(!tracker.isVisible() && count < 2) {
-            drive.followTrajectorySync(
-                    drive.trajectoryBuilder()
-                            .strafeRight (9)
-                            .build()
-            );
+           virtualDrive.strafeRight(9);
 
             wiggle(drive);
             count++;
         }
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(12)
-                        .build()
-        );
+        virtualDrive.driveForward(12);
 
-        //grab the block
+//        liftyBoi.setUpVelocity(.25, true);
+//        liftyBoi.setFroVelocity(1,true);
+//        liftyBoi.setUpVelocity(0, true);
+//        liftyBoi.setFroVelocity(.25, true);
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .back(12)
-                        .build()
-        );
+       virtualDrive.driveBack(12);
 
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .strafeLeft(60 - (count - 2) *8)
-                        .build()
-        );
+        virtualDrive.strafeLeft(60 - (count - 2) *8);
 
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(12)
-                        .build()
-        );
+        virtualDrive.driveForward(12);
 
         //place block
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .back(12)
-                        .build()
-        );
+        virtualDrive.driveBack(12);
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .strafeRight(48)
-                        .build()
-        );
+        virtualDrive.strafeRight(48);
 
 //
         if (isStopRequested()) return;

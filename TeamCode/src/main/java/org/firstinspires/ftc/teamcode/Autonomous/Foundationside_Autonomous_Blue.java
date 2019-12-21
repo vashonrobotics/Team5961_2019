@@ -31,22 +31,20 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Grabby;
-import org.firstinspires.ftc.teamcode.SkystoneTracker;
+import org.firstinspires.ftc.teamcode.SkystoneTrackerVuforia;
+import org.firstinspires.ftc.teamcode.drive.SidewaysBot;
+import org.firstinspires.ftc.teamcode.drive.VirtualDriveInterface;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
+import org.firstinspires.ftc.teamcode.opmode.BaseGrabber;
+import org.firstinspires.ftc.teamcode.opmode.Intake;
+import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 
 /**
@@ -54,10 +52,10 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimiz
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
  * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
- *
+ * <p>
  * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
  * It includes all the skeletal structure that all linear OpModes contain.
- *
+ * <p>
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
@@ -71,7 +69,7 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
-    private SkystoneTracker tracker = null;
+    private SkystoneTrackerVuforia tracker = null;
 //    private Grabby claw;
 //    private Servo WaveMF;
 //    private Servo Mine;
@@ -79,102 +77,84 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
     @Override
     public void runOpMode() {
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap, false);
-        tracker = new SkystoneTracker(0.5);
+        tracker = new SkystoneTrackerVuforia(0.5);
         tracker.init();
+        VirtualDriveInterface virtualDrive = new SidewaysBot(drive, tracker);
+        Intake intake = new Intake(hardwareMap);
+        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
+        Grabby grabby = new Grabby(hardwareMap);
+        BaseGrabber baseGrabber = new BaseGrabber(hardwareMap);
+
 //        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
 //        Mine = hardwareMap.get(Servo.class, "Mine");
 //
 //        claw = new Grabby(Mine, WaveMF);
-        Trajectory trajectory = drive.trajectoryBuilder()
-                .forward(DISTANCE)
-                .build();
 
-        while(!isStarted()){
+        while (!isStarted()) {
             tracker.update();
-            if(tracker.isVisible()){
+            if (tracker.isVisible()) {
                 double xpos = tracker.getX();
                 double ypos = tracker.getY();
-                telemetry.addData("Stoneside_Autonomous_Red:",xpos);
-                telemetry.addData ("Y:", ypos);
+                telemetry.addData("Stoneside_Autonomous_Red:", xpos);
+                telemetry.addData("Y:", ypos);
             }
             telemetry.update();
             sleep(25);
         }
-        drive.setPoseEstimate(new Pose2d(40, 63, Math.PI/2));
+        drive.setPoseEstimate(new Pose2d(40, 63, Math.PI / 2));
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(48)
-                        .build()
-        );
+//        virtualDrive.driveForward(48);
+//
+//        wiggle(drive);
+//
+//        tracker.update();
+//        sleep(1000);
+//        tracker.update();
+//
+//        int count = 0;
+//        while (!tracker.isVisible() && count < 2) {
+//            virtualDrive.strafeRight(9);
+//
+//            wiggle(drive);
+//            count++;
+//        }
 
-        wiggle(drive);
+        virtualDrive.driveForward(12);
 
-        tracker.update();
-        sleep(1000);
-        tracker.update();
+//        liftyBoi.setUpVelocity(.25, true);
+//        liftyBoi.setFroVelocity(1,true);
+//        liftyBoi.setUpVelocity(0, true);
+//        liftyBoi.setFroVelocity(.25, true);
+//
+//        virtualDrive.driveBack(48);
 
-        int count = 0;
-        while(!tracker.isVisible() && count < 2) {
-            drive.followTrajectorySync(
-                    drive.trajectoryBuilder()
-                            .strafeRight (9)
-                            .build()
-            );
+//        virtualDrive.strafeLeft(60 - (count - 2) * 8);
 
-            wiggle(drive);
-            count++;
-        }
+        virtualDrive.strafeLeft(64);
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(12)
-                        .build()
-        );
+        baseGrabber.release();
 
-        //grab the block
+        virtualDrive.driveForward(24);
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .back(48)
-                        .build()
-        );
+        baseGrabber.grab();
+        sleep(500);
+        virtualDrive.driveBack(48);
 
+        baseGrabber.release();
 
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .strafeLeft(60 - (count - 2) *8)
-                        .build()
-        );
+        virtualDrive.strafeRight(47);
+        virtualDrive.driveForward(12);
+        virtualDrive.strafeLeft(14);
 
-
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .forward(12)
-                        .build()
-        );
-
-        //place block
-        //grab base
-
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .back(48)
-                        .build()
-        );
-
-        drive.followTrajectorySync(
-                drive.trajectoryBuilder()
-                        .strafeRight(48)
-                        .build()
-        );
+        virtualDrive.strafeRight(32);
+        virtualDrive.driveForward(6);
 
 //
         if (isStopRequested()) return;
 
 //        drive.followTrajectorySync(trajectory);
 //        drive.turnSync(Math.toRadians(ANGLE));
-//        drive.turnSync(Math.toRadians(ANGLE));
+//        drive.turnSync(Math.toRadcians(ANGLE));
 //        drive.turnSync(Math.toRadians(ANGLE));
 //        drive.followTrajectorySync(trajectory);
     }
@@ -182,7 +162,7 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
     private void wiggle(SampleMecanumDriveBase drive) {
         drive.turnSync(-Math.PI / 24);
         int sign = 1;
-        for(int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
             drive.turnSync(sign * Math.PI / 12);
             sign *= -1;
             tracker.update();

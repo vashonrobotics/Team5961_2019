@@ -1,29 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Grabby {
-    private Servo Mine;
-    private Servo WaveMF;
-
-    public Grabby(Servo mine, Servo waveMF) {
-        Mine = mine;
-        WaveMF = waveMF;
+    private Servo mine;
+    public Grabby(HardwareMap hardwareMap) {
+       this.mine = hardwareMap.servo.get("Mine");
     }
 
-    public void SMASH() {  Mine.setPosition(0.57);
+    public void SMASH() {  mine.setPosition(0.57);
     }
 
 
     public void openGrip() {
-        Mine.setPosition(0);
+        mine.setPosition(0);
     }
 
-    public void razeClaw() {
-        WaveMF.setPosition(.9 );
-    }
-
-    public void dorpClaw() {
-        WaveMF.setPosition(.1);
-    }
 }

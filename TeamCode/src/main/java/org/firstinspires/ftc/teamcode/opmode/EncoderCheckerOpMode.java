@@ -59,6 +59,8 @@ public class EncoderCheckerOpMode extends LinearOpMode {
     private DcMotor leftRear;
     private DcMotor rightRear;
     private DcMotor rightFront;
+    private DcMotor ascension;
+    private DcMotor reach;
 
 
     @Override
@@ -68,11 +70,16 @@ public class EncoderCheckerOpMode extends LinearOpMode {
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
         rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        this.ascension = hardwareMap.dcMotor.get("LiftUp");
+        this.reach = hardwareMap.dcMotor.get("LiftOut");
 
         leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftRear.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightRear.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        ascension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        reach.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
 
         waitForStart();
 
@@ -85,9 +92,11 @@ public class EncoderCheckerOpMode extends LinearOpMode {
             int rightFrontPos = rightFront.getCurrentPosition();
             int leftRearPos = leftRear.getCurrentPosition();
             int rightRearPos = rightRear.getCurrentPosition();
+            int ascensionPos = ascension.getCurrentPosition();
+            int reachPos = reach.getCurrentPosition();
 
-            @SuppressLint("DefaultLocale") String message = String.format("lf = %d, rf = %d, lr = %d, rr = %d",
-                    leftFrontPos, rightFrontPos, leftRearPos, rightRearPos);
+            @SuppressLint("DefaultLocale") String message = String.format("lf = %d, rf = %d, lr = %d, rr = %d, asc = %d, re = %d",
+                    leftFrontPos, rightFrontPos, leftRearPos, rightRearPos, ascensionPos, reachPos);
             telemetry.addLine(message);
             telemetry.update();
 
