@@ -13,7 +13,7 @@ public class Pass {
         Point lastPoint = null;
         for (Point currentPoint : points) {
             if (lastPoint != null) {
-                RobotLog.d(String.format("Added segment start = %s, end = %s", lastPoint, currentPoint));
+//                RobotLog.d(String.format("Added segment start = %s, end = %s", lastPoint, currentPoint));
                 segments.add(new PassSegment(lastPoint, currentPoint));
             }
 
@@ -26,8 +26,8 @@ public class Pass {
             int minX = Math.min(segment.getStartX(), segment.getEndX());
             int maxX = Math.max(segment.getStartX(), segment.getEndX());
             if (x >= minX && x < maxX) {
-                RobotLog.d(String.format("Getting minimum from segment startx = %d, endX = %d, min = %d",
-                        minX, maxX, segment.getMinimum(x)));
+//                RobotLog.d(String.format("Getting minimum from segment startx = %d, endX = %d, min = %d",
+//                        minX, maxX, segment.getMinimum(x)));
                 return segment.getMinimum(x);
             }
 

@@ -6,53 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
 
-/*
- *    UPPER_UP ---------------------------------
- *
- *      <<---- OUTBOARD | INBOARD ------>>
- *
- *
- *
- *                     INNER_RAMP      (Below this line is the danger zone)
- *                        |             |
- *                        |             |
- *                        v             v
- *                        /--------------------  PLATEAU_UP
- *                       / O                  ^
- *                      /   \                 |
- *                     /     \                |
- * LOWER_UP ----------/      Axle            LOWER_FRO
- *          ^          ^
- *          |          |
- *      UPPER_FRO      |
- *                 OUTER_RAMP
- *
- */
 
 public class LiftyBoi {
     public static final int D_MIN = 17;
-    private static final int UPPER_FRO = 1461;
-    private static final int LOWER_FRO = -553;
-    private static final int UPPER_UP = 1420;
-    private static final int LOWER_UP = -200;
-    private static final int END_FRO = -505;
-    private static final int END_UP = -39;
+
     private final DcMotor ascension;
     private final DcMotor reach;
-
-    public static final int OUTER_RAMP = 1119;
-
-    public static final int INNER_RAMP = 1038;
-    public static final int PLATEAU_UP = 265;
-    private static Pass lowerLimitPass = new Pass(
-            new Point(-2000, END_UP),
-            new Point(END_FRO, END_UP),
-            new Point(END_FRO, PLATEAU_UP),
-            new Point(LOWER_FRO, PLATEAU_UP),
-            new Point(INNER_RAMP, PLATEAU_UP),
-            new Point(OUTER_RAMP, LOWER_UP),
-            new Point(UPPER_FRO, LOWER_UP));
-
+    private final Ramp ramp;
 
 
     public LiftyBoi(HardwareMap hardwareMap) {
@@ -71,6 +31,8 @@ public class LiftyBoi {
 
         this.ascension.setPower(0.0);
         this.reach.setPower(0.0);
+
+        this.ramp = new Ramp();
     }
 
     public void setVelocity(double froVelocity, double upVelocity) {
@@ -81,7 +43,7 @@ public class LiftyBoi {
         int currentReach = reach.getCurrentPosition();
         int currentUp = ascension.getCurrentPosition();
 
-        Integer lowerLimit = lowerLimitPass.getMinimum(currentReach);
+        Integer lowerLimit = ramp.getMinimum(currentReach);
         if(lowerLimit != null) {
             double restorationVelocity =  clipVelocity(0.5 * (lowerLimit - currentUp));
             if(restorationVelocity > 0) {
@@ -90,19 +52,19 @@ public class LiftyBoi {
             }
         }
 
-        if (currentReach >= UPPER_FRO) {
+        if (currentReach >= Ramp.UPPER_FRO) {
             froVelocity = Math.min(froVelocity, 0);
         }
 
-        if (currentReach <= LOWER_FRO) {
+        if (currentReach <= Ramp.LOWER_FRO) {
             froVelocity = Math.max(froVelocity, 0);
         }
 
-        if (currentUp >= UPPER_UP) {
+        if (currentUp >= Ramp.UPPER_UP) {
             upVelocity = Math.min(upVelocity, 0);
         }
 
-        if (currentUp <= LOWER_UP) {
+        if (currentUp <= Ramp.LOWER_UP) {
             upVelocity = Math.max(upVelocity, 0);
         }
 
