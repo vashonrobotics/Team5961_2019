@@ -142,7 +142,7 @@ public class Stoneside_Autonomous_Blue extends LinearOpMode {
 
 //
         if (isStopRequested()) return;
-
+        autoliftyboi.gotoLowerUpUpperFro();
 //        drive.followTrajectorySync(trajectory);
 //        drive.turnSync(Math.toRadians(ANGLE));
 //        drive.turnSync(Math.toRadians(ANGLE));

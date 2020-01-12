@@ -97,7 +97,7 @@ public class Foundationside_Park_Red extends LinearOpMode {
 
         virtualDrive.driveForward(24);
         virtualDrive.strafeRight(12);
-
+        autoliftyboi.gotoLowerUpUpperFro();
         if (isStopRequested()) return;
 
 //        drive.followTrajectorySync(trajectory);

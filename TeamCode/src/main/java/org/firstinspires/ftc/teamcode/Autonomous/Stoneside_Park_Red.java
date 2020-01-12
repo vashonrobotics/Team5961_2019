@@ -100,6 +100,7 @@ public class Stoneside_Park_Red extends LinearOpMode {
         virtualDrive.strafeRight(36 );
 
         if (isStopRequested()) return;
+        autoliftyboi.gotoLowerUpUpperFro();
 
 //        drive.followTrajectorySync(trajectory);
 //        drive.turnSync(Math.toRadians(ANGLE));

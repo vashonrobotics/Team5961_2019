@@ -155,6 +155,7 @@ public class Foundationside_Autonomous_Red extends LinearOpMode {
 //        virtualDrive.driveForward( 6);
 
 //
+        autoliftyboi.gotoLowerUpUpperFro();
         if (isStopRequested()) return;
 
 //        drive.followTrajectorySync(trajectory);

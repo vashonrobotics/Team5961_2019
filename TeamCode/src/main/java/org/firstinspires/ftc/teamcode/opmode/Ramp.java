@@ -23,15 +23,17 @@ package org.firstinspires.ftc.teamcode.opmode;
  */
 
 public class Ramp {
-    public static final int UPPER_FRO = 1461;
-    public static final int LOWER_FRO = -553;
-    public static final int UPPER_UP = 1420;
-    public static final int LOWER_UP = -200;
-    public static final int END_FRO = -475;
-    public static final int END_UP = -39;
-    public static final int OUTER_RAMP = 1119;
-    public static final int INNER_RAMP = 1038;
-    public static final int PLATEAU_UP = 265;
+    private static final int FRO_OFFSET = 1461;
+    private static final int UP_OFFSET = -200;
+    public static final int UPPER_FRO = 1461 - FRO_OFFSET;
+    public static final int LOWER_FRO = -553 - FRO_OFFSET;
+    public static final int UPPER_UP = 1420 - UP_OFFSET;
+    public static final int LOWER_UP = -200 - UP_OFFSET;
+    public static final int END_FRO = -475 - FRO_OFFSET;
+    public static final int END_UP = -39 - UP_OFFSET;
+    public static final int OUTER_RAMP = 1119 - FRO_OFFSET;
+    public static final int INNER_RAMP = 1038 - FRO_OFFSET;
+    public static final int PLATEAU_UP = 265 - UP_OFFSET;
     public static Pass lowerLimitPass = new Pass(
             new Point(-2000, END_UP),
             new Point(END_FRO, END_UP),

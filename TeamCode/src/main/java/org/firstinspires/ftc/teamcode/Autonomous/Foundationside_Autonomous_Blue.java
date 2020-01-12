@@ -143,6 +143,8 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
         virtualDrive.strafeRight(32);
         virtualDrive.driveForward(6);
 
+        autoliftyboi.gotoLowerUpUpperFro();
+
 //
         if (isStopRequested()) return;
 
