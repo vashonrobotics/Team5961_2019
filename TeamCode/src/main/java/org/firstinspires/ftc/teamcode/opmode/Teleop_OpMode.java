@@ -34,7 +34,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.Grabby;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
@@ -75,8 +74,9 @@ public class Teleop_OpMode extends LinearOpMode {
         BaseGrabber baseGrabber = new BaseGrabber(hardwareMap);
         double currentFro = 0;
         double currentUp = 0;
-        boolean isGrabbing = false;
-        boolean isReleased = true;
+        boolean isBaseGrabbing = false;
+        boolean isBaseReleased = true;
+        boolean isGripping = true;
         ascension = hardwareMap.dcMotor.get("LiftUp");
         reach = hardwareMap.dcMotor.get("LiftOut");
 
@@ -104,30 +104,34 @@ public class Teleop_OpMode extends LinearOpMode {
                 intake.stop();
             }
 
-            liftyBoi.setUpVelocity(-gamepad2.left_stick_y);
-            liftyBoi.setFroVelocity(-gamepad2.right_stick_x);
+            liftyBoi.setVelocity(-gamepad2.left_stick_x, -gamepad2.left_stick_y);
 
             int ascensionpos = ascension.getCurrentPosition();
             int reacpos = reach.getCurrentPosition();
 
             telemetry.addData("positions", "asc = %d, rea = %d", ascensionpos, reacpos);
 
-            if (gamepad2.right_trigger > .5) {
+            boolean gripperPressed = gamepad2.right_trigger > .5;
+            if (gripperPressed) {
+                isGripping = !isGripping;
+            }
+
+            if (isGripping) {
                 grabby.SMASH();
             } else {
                 grabby.openGrip();
             }
 
-            if (gamepad2.a && isReleased) {
-                isGrabbing = !isGrabbing;
-                isReleased = false;
+            if (gamepad2.a && isBaseReleased) {
+                isBaseGrabbing = !isBaseGrabbing;
+                isBaseReleased = false;
             }
 
             if (!gamepad2.a) {
-                isReleased = true;
+                isBaseReleased = true;
             }
 
-            if (isGrabbing) {
+            if (isBaseGrabbing) {
                 baseGrabber.grab();
             } else {
                 baseGrabber.release();
@@ -142,3 +146,4 @@ public class Teleop_OpMode extends LinearOpMode {
     }
 
 }
+

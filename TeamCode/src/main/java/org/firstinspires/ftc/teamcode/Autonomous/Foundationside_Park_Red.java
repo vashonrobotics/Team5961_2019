@@ -42,8 +42,8 @@ import org.firstinspires.ftc.teamcode.drive.SidewaysBot;
 import org.firstinspires.ftc.teamcode.drive.VirtualDriveInterface;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.opmode.AutoLiftyBoi;
 import org.firstinspires.ftc.teamcode.opmode.Intake;
-import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 
 /**
@@ -77,8 +77,8 @@ public class Foundationside_Park_Red extends LinearOpMode {
         tracker.init();
         VirtualDriveInterface virtualDrive = new SidewaysBot(drive, tracker);
         Intake intake = new Intake(hardwareMap);
-        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
         Grabby grabby = new Grabby(hardwareMap);
+        AutoLiftyBoi autoliftyboi = new AutoLiftyBoi(hardwareMap);
 
         while(!isStarted()){
             tracker.update();
@@ -92,6 +92,8 @@ public class Foundationside_Park_Red extends LinearOpMode {
             sleep(25);
         }
         drive.setPoseEstimate(new Pose2d(40, 63, 90));
+
+        autoliftyboi.fromStartingToExtended();
 
         virtualDrive.driveForward(24);
         virtualDrive.strafeRight(12);

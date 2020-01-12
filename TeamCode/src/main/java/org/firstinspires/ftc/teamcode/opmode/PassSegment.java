@@ -17,4 +17,12 @@ public class PassSegment {
         double y = slope * (x - start.getX()) + start.getY();
         return (int)Math.round(y);
     }
+
+    public int getEndX() {
+        return end.getX();
+    }
+
+    public int getStartX() {
+        return start.getX();
+    }
 }

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
-import com.qualcomm.robotcore.eventloop  .opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -29,14 +28,15 @@ import com.qualcomm.robotcore.util.RobotLog;
  *
  */
 
-public class LiftyBoi {
+public class AutoLiftyBoi {
     public static final int D_MIN = 17;
     private static final int UPPER_FRO = 1461;
-    private static final int LOWER_FRO = -553;
+    private static final int LOWER_FRO = -448;
     private static final int UPPER_UP = 1420;
     private static final int LOWER_UP = -200;
     private static final int END_FRO = -505;
     private static final int END_UP = -39;
+    public static final double ACCEPTABLE_ERROR = 10;
     private final DcMotor ascension;
     private final DcMotor reach;
 
@@ -46,7 +46,6 @@ public class LiftyBoi {
     public static final int PLATEAU_UP = 265;
     private static Pass lowerLimitPass = new Pass(
             new Point(-2000, END_UP),
-            new Point(END_FRO, END_UP),
             new Point(END_FRO, PLATEAU_UP),
             new Point(LOWER_FRO, PLATEAU_UP),
             new Point(INNER_RAMP, PLATEAU_UP),
@@ -54,69 +53,52 @@ public class LiftyBoi {
             new Point(UPPER_FRO, LOWER_UP));
 
 
-
-    public LiftyBoi(HardwareMap hardwareMap) {
+    public AutoLiftyBoi(HardwareMap hardwareMap) {
         this.ascension = hardwareMap.dcMotor.get("LiftUp");
         this.reach = hardwareMap.dcMotor.get("LiftOut");
-        this.reach.setDirection(DcMotorSimple.Direction.REVERSE );
+        this.reach.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.ascension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.reach.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        this.ascension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        this.reach.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        this.ascension.setTargetPosition(0);
+        this.reach.setTargetPosition(0);
 
-        this.ascension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        this.reach.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.ascension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        this.reach.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        this.ascension.setPower(0.0);
-        this.reach.setPower(0.0);
+        this.ascension.setPower(1.0);
+        this.reach.setPower(1.0);
     }
 
-    public void setVelocity(double froVelocity, double upVelocity) {
-
-        froVelocity = clipVelocity(froVelocity);
-        upVelocity = clipVelocity(upVelocity);
-
-        int currentReach = reach.getCurrentPosition();
-        int currentUp = ascension.getCurrentPosition();
-
-        Integer lowerLimit = lowerLimitPass.getMinimum(currentReach);
-        if(lowerLimit != null) {
-            double restorationVelocity =  clipVelocity(0.5 * (lowerLimit - currentUp));
-            if(restorationVelocity > 0) {
-                upVelocity = Math.max(upVelocity, restorationVelocity);
-                froVelocity = Math.max(Math.min(0.5, froVelocity), -0.5);
-            }
-        }
-
-        if (currentReach >= UPPER_FRO) {
-            froVelocity = Math.min(froVelocity, 0);
-        }
-
-        if (currentReach <= LOWER_FRO) {
-            froVelocity = Math.max(froVelocity, 0);
-        }
-
-        if (currentUp >= UPPER_UP) {
-            upVelocity = Math.min(upVelocity, 0);
-        }
-
-        if (currentUp <= LOWER_UP) {
-            upVelocity = Math.max(upVelocity, 0);
-        }
-
-        String messasge = String.format("reach = %d, asc = %d, reach' = %f, asc' = %f",
-                currentReach, currentUp, froVelocity, upVelocity);
-
-        RobotLog.d(messasge);
-
-        reach.setPower(froVelocity);
-        ascension.setPower(upVelocity);
+    public void gotoPlateauUpUpperFro() {
+        this.ascension.setTargetPosition(PLATEAU_UP);
+        this.reach.setTargetPosition(UPPER_FRO);
+        waitForMotorbs(PLATEAU_UP, UPPER_FRO);
     }
 
-    private double clipVelocity(double motorVelocity) {
-        return Math.min(1.0, Math.max(motorVelocity, -1.0));
+    public void gotoLowerUpUpperFro() {
+        this.ascension.setTargetPosition(LOWER_UP);
+        this.reach.setTargetPosition(UPPER_FRO);
+        waitForMotorbs(LOWER_UP, UPPER_FRO);
+    }
+
+
+    private void waitForMotorbs(int ascensionPosition, int reachPostition) {
+        while (Math.abs(ascensionPosition - this.ascension.getCurrentPosition()) > ACCEPTABLE_ERROR &&
+                Math.abs(reachPostition - this.reach.getCurrentPosition()) > ACCEPTABLE_ERROR) {
+            sleep(5);
+        }
+    }
+
+    public void fromStartingToExtended(){
+        gotoPlateauUpUpperFro();
+        gotoLowerUpUpperFro();
+    }
+
+    public void fromExtendedtoUp(){
+        gotoLowerUpUpperFro();
+        gotoPlateauUpUpperFro();
     }
 
     public final void sleep(long milliseconds) {

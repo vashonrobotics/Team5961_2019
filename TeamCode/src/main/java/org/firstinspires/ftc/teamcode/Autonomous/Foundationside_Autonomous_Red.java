@@ -42,9 +42,9 @@ import org.firstinspires.ftc.teamcode.drive.SidewaysBot;
 import org.firstinspires.ftc.teamcode.drive.VirtualDriveInterface;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.opmode.AutoLiftyBoi;
 import org.firstinspires.ftc.teamcode.opmode.BaseGrabber;
 import org.firstinspires.ftc.teamcode.opmode.Intake;
-import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 
 /**
@@ -81,9 +81,9 @@ public class Foundationside_Autonomous_Red extends LinearOpMode {
         tracker.init();
         VirtualDriveInterface virtualDrive = new SidewaysBot(drive, tracker);
         Intake intake = new Intake(hardwareMap);
-        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
         Grabby grabby = new Grabby(hardwareMap);
         BaseGrabber baseGrabber = new BaseGrabber(hardwareMap);
+        AutoLiftyBoi autoliftyboi = new AutoLiftyBoi(hardwareMap);
 
 //        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
 //        Mine = hardwareMap.get(Servo.class, "Mine");
@@ -102,6 +102,9 @@ public class Foundationside_Autonomous_Red extends LinearOpMode {
             sleep(25);
         }
         drive.setPoseEstimate(new Pose2d(40, 63, Math.PI / 2));
+
+        autoliftyboi.fromStartingToExtended();
+
 
 //        virtualDrive.driveForward(48);
 //
@@ -133,21 +136,23 @@ public class Foundationside_Autonomous_Red extends LinearOpMode {
         virtualDrive.strafeRight(64);
 
         baseGrabber.release();
+        autoliftyboi.fromExtendedtoUp();
 
-        virtualDrive.driveForward(24);
+        virtualDrive.driveForward(25);
 
         baseGrabber.grab();
         sleep(500);
-        virtualDrive.driveBack(48);
+        virtualDrive.driveBack(60);
 
         baseGrabber.release();
+        autoliftyboi.fromStartingToExtended();
 
-        virtualDrive.strafeLeft(47);
-        virtualDrive.driveForward(12);
-        virtualDrive.strafeRight(14);
-
-        virtualDrive.strafeLeft(32);
-        virtualDrive.driveForward( 6);
+        virtualDrive.strafeLeft(44);
+        virtualDrive.driveForward(18);
+//        virtualDrive.strafeRight(14);
+//
+//        virtualDrive.strafeLeft(27);
+//        virtualDrive.driveForward( 6);
 
 //
         if (isStopRequested()) return;

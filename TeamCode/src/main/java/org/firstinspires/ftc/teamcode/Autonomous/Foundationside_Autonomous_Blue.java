@@ -36,15 +36,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Grabby;
 import org.firstinspires.ftc.teamcode.SkystoneTrackerVuforia;
 import org.firstinspires.ftc.teamcode.drive.SidewaysBot;
 import org.firstinspires.ftc.teamcode.drive.VirtualDriveInterface;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.opmode.AutoLiftyBoi;
 import org.firstinspires.ftc.teamcode.opmode.BaseGrabber;
-import org.firstinspires.ftc.teamcode.opmode.Intake;
-import org.firstinspires.ftc.teamcode.opmode.LiftyBoi;
 
 
 /**
@@ -80,15 +78,10 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
         tracker = new SkystoneTrackerVuforia(0.5);
         tracker.init();
         VirtualDriveInterface virtualDrive = new SidewaysBot(drive, tracker);
-        Intake intake = new Intake(hardwareMap);
-        LiftyBoi liftyBoi = new LiftyBoi(hardwareMap);
-        Grabby grabby = new Grabby(hardwareMap);
         BaseGrabber baseGrabber = new BaseGrabber(hardwareMap);
+        AutoLiftyBoi autoliftyboi = new AutoLiftyBoi(hardwareMap);
 
-//        WaveMF = hardwareMap.get(Servo.class, "WaveMF");
-//        Mine = hardwareMap.get(Servo.class, "Mine");
-//
-//        claw = new Grabby(Mine, WaveMF);
+
 
         while (!isStarted()) {
             tracker.update();
@@ -102,6 +95,7 @@ public class Foundationside_Autonomous_Blue extends LinearOpMode {
             sleep(25);
         }
         drive.setPoseEstimate(new Pose2d(40, 63, Math.PI / 2));
+        autoliftyboi.fromStartingToExtended();
 
 //        virtualDrive.driveForward(48);
 //
